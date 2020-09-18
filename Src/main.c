@@ -104,6 +104,13 @@ int main(void)
   lcd_send_string(&lcd1, "from MV E JP");
   HAL_Delay(2000);
   lcd_cmd_clear_display(&lcd1);
+
+  uint8_t custom_char[8] = {0x00, 0x0A, 0x0A, 0x00, 0x11, 0x1B, 0x0E, 0x00};
+  lcd_send_custom_char(&lcd1, 0x00, (uint8_t*) custom_char);
+  lcd_put_cur(&lcd1, 0, 0);
+  lcd_send_data(&lcd1, 0x00);
+  HAL_Delay(2000);
+  lcd_cmd_clear_display(&lcd1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -284,11 +291,13 @@ static void LCD1_init(void){
   lcdInit.functionSet = BITS4_LINES2_5X8DOTS;
   lcdInit.entryMode = MOVE_CURSOR_INCREMENT;
   lcdInit.displayControl = DISPLAY_ON;
-  lcdInit.cursorControl = CURSOR_OFF;
-  lcdInit.blinkingControl = BLINKING_OFF;
+  lcdInit.cursorControl = CURSOR_ON;
+  lcdInit.blinkingControl = BLINKING_ON;
 
   lcd_init(&lcdInit);
 }
+
+
 /* USER CODE END 4 */
 
 /**

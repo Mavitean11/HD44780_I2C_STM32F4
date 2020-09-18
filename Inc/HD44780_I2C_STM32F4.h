@@ -129,5 +129,6 @@ void lcd_function_set(I2C_LCD_HandleTypeDef *lcd, FUNCTION_SET_OPTION functionSe
 void lcd_put_cur(I2C_LCD_HandleTypeDef *lcd, int row, int col); // put cursor in row, col postion
 void lcd_send_data(I2C_LCD_HandleTypeDef *lcd, char data); // sent data to DDRAM or CGRAM
 void lcd_send_string(I2C_LCD_HandleTypeDef *lcd,char *str);
+void lcd_send_custom_char(I2C_LCD_HandleTypeDef *lcd, uint8_t cgram_addr, uint8_t* pattern);
 
 #endif /* HD44780_I2C_STM32F4_H_ */
