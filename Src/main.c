@@ -98,19 +98,18 @@ int main(void)
   /* USER CODE BEGIN 2 */
   LCD1_init();
 
-  lcd_send_string(&lcd1, "HELLO WORLD");
+  LCD_SendString(&lcd1, "Ola Turma");
   HAL_Delay(1000);
-  lcd_put_cur(&lcd1, 1, 0);
-  lcd_send_string(&lcd1, "from MV E JP");
+  LCD_PutCursor(&lcd1, 1, 0);
+  LCD_SendString(&lcd1, "UFMG");
   HAL_Delay(2000);
-  lcd_cmd_clear_display(&lcd1);
 
   uint8_t custom_char[8] = {0x00, 0x0A, 0x0A, 0x00, 0x11, 0x1B, 0x0E, 0x00};
-  lcd_send_custom_char(&lcd1, 0x00, (uint8_t*) custom_char);
-  lcd_put_cur(&lcd1, 0, 0);
-  lcd_send_data(&lcd1, 0x00);
+  LCD_SendCustomChar(&lcd1, CUSTOM_CHAR_5X8_1, (uint8_t*) custom_char, CHAR_5X8);
+  LCD_PutCursor(&lcd1, 1, 5);
+  LCD_SendData(&lcd1, CUSTOM_CHAR_5X8_1);
   HAL_Delay(2000);
-  lcd_cmd_clear_display(&lcd1);
+  LCD_CMD_ClearDisplay(&lcd1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -121,9 +120,9 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 	for (int i=0;i<128;i++){
-		lcd_put_cur(&lcd1, row, col);
+		LCD_PutCursor(&lcd1, row, col);
 
- 		lcd_send_data(&lcd1, i+48);
+		LCD_SendData(&lcd1, i+48);
 
   		col++;
 
@@ -285,16 +284,13 @@ static void LCD1_init(void){
   lcd1.hi2c = &hi2c1;
   lcd1.address = 0x4E;
 
-  I2C_LCD_InitStruct lcdInit;
+  lcd1.functionSet = BITS4_LINES2_5X8DOTS;
+  lcd1.entryMode = MOVE_CURSOR_INCREMENT;
+  lcd1.display = DISPLAY_ON;
+  lcd1.cursor = CURSOR_ON;
+  lcd1.blinking = BLINKING_ON;
 
-  lcdInit.lcd = &lcd1;
-  lcdInit.functionSet = BITS4_LINES2_5X8DOTS;
-  lcdInit.entryMode = MOVE_CURSOR_INCREMENT;
-  lcdInit.displayControl = DISPLAY_ON;
-  lcdInit.cursorControl = CURSOR_ON;
-  lcdInit.blinkingControl = BLINKING_ON;
-
-  lcd_init(&lcdInit);
+  LCD_init(&lcd1);
 }
 
 

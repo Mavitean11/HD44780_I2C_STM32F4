@@ -58,7 +58,7 @@
 #include <HD44780_I2C_STM32F4.h>
 
 // Private functions that sends commands
-void lcd_send_cmd(I2C_LCD_HandleTypeDef *lcd, char cmd){
+void LCD_SendCMD(I2C_LCD_HandleTypeDef *lcd, char cmd){
     char data_u, data_l;
     uint8_t data_t[4];
     data_u = (cmd&0xf0);
@@ -71,51 +71,51 @@ void lcd_send_cmd(I2C_LCD_HandleTypeDef *lcd, char cmd){
 }
 
 // Public functions to access commands described in table 6 of the datasheet
-void lcd_cmd_clear_display(I2C_LCD_HandleTypeDef *lcd){
-	lcd_send_cmd(lcd, 0x01);
+void LCD_CMD_ClearDisplay(I2C_LCD_HandleTypeDef *lcd){
+	LCD_SendCMD(lcd, 0x01);
 	HAL_Delay(1);
 }
 
-void lcd_cmd_return_home(I2C_LCD_HandleTypeDef *lcd){
-	lcd_send_cmd(lcd, 0x02);
+void LCD_CMD_ReturnHome(I2C_LCD_HandleTypeDef *lcd){
+	LCD_SendCMD(lcd, 0x02);
 	HAL_Delay(2);
 }
 
-void lcd_cmd_entry_mode_set(I2C_LCD_HandleTypeDef *lcd, ENTRY_MODE entryMode){
-	lcd_send_cmd(lcd, (entryMode & 0x07));
+void LCD_CMD_EntryModeSet(I2C_LCD_HandleTypeDef *lcd, LCD_EntryMode entryMode){
+	LCD_SendCMD(lcd, entryMode);
 	HAL_Delay(1);
 }
 
-void lcd_cmd_display_control(I2C_LCD_HandleTypeDef *lcd, DISPLAY_CONTROL displayControl, CURSOR_CONTROL cursorControl, BLINKING_CONTROL blinkingControl){
-	lcd_send_cmd(lcd, ((displayControl | cursorControl | blinkingControl) & 0x0F));
+void LCD_CMD_DisplayControl(I2C_LCD_HandleTypeDef *lcd, LCD_DisplayOnOff displayControl, LCD_CursorOnOff cursorControl, LCD_BlinkingOnOff blinkingControl){
+	LCD_SendCMD(lcd, (displayControl | cursorControl | blinkingControl));
 	HAL_Delay(1);
 }
 
-void lcd_cmd_cursor_or_display_shift(I2C_LCD_HandleTypeDef *lcd, CURSOR_OR_DISPLAY_SHIFT cursorOrDisplayShift){
-	lcd_send_cmd(lcd, (cursorOrDisplayShift & 0x1C));
+void LCD_CMD_CursorOrDisplayShift(I2C_LCD_HandleTypeDef *lcd, LCD_CursorOrDisplayShift cursorOrDisplayShift){
+	LCD_SendCMD(lcd, cursorOrDisplayShift);
 	HAL_Delay(1);
 }
 
-void lcd_function_set(I2C_LCD_HandleTypeDef *lcd, FUNCTION_SET_OPTION functionSet){
-	lcd_send_cmd(lcd, (functionSet & 0x3C));
+void LCD_CMD_FunctionSet(I2C_LCD_HandleTypeDef *lcd, LCD_FunctionSetOptions functionSet){
+	LCD_SendCMD(lcd, functionSet);
 	HAL_Delay(1);
 }
 
-void lcd_cmd_set_CGRAM_addr(I2C_LCD_HandleTypeDef *lcd, uint8_t address){
+void LCD_CMD_SetCGRAMAddr(I2C_LCD_HandleTypeDef *lcd, uint8_t address){
 	address &= 0x3F; // Clear 2 msb since CGRAM has 6 bit address
 	address |= 0x40; // Set DB6 as it is a function bit
-	lcd_send_cmd(lcd, address);
+	LCD_SendCMD(lcd, address);
 	HAL_Delay(1);
 }
 
-void lcd_cmd_set_DDRAM_addr(I2C_LCD_HandleTypeDef *lcd, uint8_t address){
+void LCD_CMD_SetDDRAMAddr(I2C_LCD_HandleTypeDef *lcd, uint8_t address){
 	address &= 0x7F; // Clear the msb since CGRAM has 6 bit address
 	address |= 0x80; // Set DB7 as it is a function bit
-	lcd_send_cmd(lcd, address);
+	LCD_SendCMD(lcd, address);
 	HAL_Delay(1);
 }
 
-void lcd_send_data(I2C_LCD_HandleTypeDef *lcd, char data){
+void LCD_SendData(I2C_LCD_HandleTypeDef *lcd, char data){
 	char data_u, data_l;
 	uint8_t data_t[4];
 	data_u = (data&0xf0);
@@ -127,7 +127,7 @@ void lcd_send_data(I2C_LCD_HandleTypeDef *lcd, char data){
 	HAL_I2C_Master_Transmit (lcd->hi2c, lcd->address,(uint8_t *) data_t, 4, 100);
 }
 
-void lcd_put_cur(I2C_LCD_HandleTypeDef *lcd, int row, int col){
+void LCD_PutCursor(I2C_LCD_HandleTypeDef *lcd, int row, int col){
     switch (row){
         case 0:
             col |= 0x00;
@@ -137,13 +137,13 @@ void lcd_put_cur(I2C_LCD_HandleTypeDef *lcd, int row, int col){
             break;
     }
 
-    lcd_cmd_set_DDRAM_addr(lcd, col);
+    LCD_CMD_SetDDRAMAddr(lcd, col);
 }
 
 
-void lcd_init(I2C_LCD_InitStruct *lcdInit){
+void LCD_init(I2C_LCD_HandleTypeDef *lcd){
 	// 4 bit initialization as describe in datasheet page 46
-	// First 4 communications are 4bit only so we will not use the lcd_send_cmd
+	// First 4 communications are 4bit only so we will not use the LCD_SendCMD
 
 
 	uint8_t initData[2];
@@ -152,11 +152,11 @@ void lcd_init(I2C_LCD_InitStruct *lcdInit){
 
 	// First 3 communications are the same
 	HAL_Delay(50);  // wait for >40ms
-	HAL_I2C_Master_Transmit(lcdInit->lcd->hi2c, lcdInit->lcd->address,(uint8_t *) initData, 2, 100);
+	HAL_I2C_Master_Transmit(lcd->hi2c, lcd->address,(uint8_t *) initData, 2, 100);
 	HAL_Delay(5);  // wait for >4.1ms
-	HAL_I2C_Master_Transmit(lcdInit->lcd->hi2c, lcdInit->lcd->address,(uint8_t *) initData, 2, 100);
+	HAL_I2C_Master_Transmit(lcd->hi2c, lcd->address,(uint8_t *) initData, 2, 100);
 	HAL_Delay(1);  // wait for >100us
-	HAL_I2C_Master_Transmit(lcdInit->lcd->hi2c, lcdInit->lcd->address,(uint8_t *) initData, 2, 100);
+	HAL_I2C_Master_Transmit(lcd->hi2c, lcd->address,(uint8_t *) initData, 2, 100);
 	HAL_Delay(10);
 
 	// Data is different for the fourth communication
@@ -164,30 +164,32 @@ void lcd_init(I2C_LCD_InitStruct *lcdInit){
 	initData[1] = 0x20;
 
 	// Set the 4-bit interface
-	HAL_I2C_Master_Transmit(lcdInit->lcd->hi2c, lcdInit->lcd->address,(uint8_t *) initData, 2, 100);  // 4bit mode
+	HAL_I2C_Master_Transmit(lcd->hi2c, lcd->address,(uint8_t *) initData, 2, 100);  // 4bit mode
 	HAL_Delay(10);
 
 	// Now we can start configuring the LCD
 	// Display initialization
-	lcd_function_set(lcdInit->lcd, lcdInit->functionSet); // Function set --> DL=0 (4 bit mode), N = 1 (2 line display) F = 0 (5x8 characters)
+	LCD_CMD_FunctionSet(lcd, lcd->functionSet); // Function set --> DL=0 (4 bit mode), N = 1 (2 line display) F = 0 (5x8 characters)
 	HAL_Delay(1);
-	lcd_send_cmd(lcdInit->lcd, (DISPLAY_OFF | CURSOR_OFF | BLINKING_OFF)); //Display on/off control --> D=0,C=0, B=0  ---> display off
+	LCD_SendCMD(lcd, (DISPLAY_OFF | CURSOR_OFF | BLINKING_OFF)); //Display on/off control --> D=0,C=0, B=0  ---> display off
 	HAL_Delay(1);
-	lcd_cmd_clear_display(lcdInit->lcd);  // clear display
+	LCD_CMD_ClearDisplay(lcd);  // clear display
 	HAL_Delay(1);
 	HAL_Delay(1);
-	lcd_cmd_entry_mode_set(lcdInit->lcd, lcdInit->entryMode); //Entry mode set --> I/D = 1 (increment cursor) & S = 0 (no shift)
+	LCD_CMD_EntryModeSet(lcd, lcd->entryMode); //Entry mode set --> I/D = 1 (increment cursor) & S = 0 (no shift)
 	HAL_Delay(1);
-	lcd_cmd_display_control(lcdInit->lcd, lcdInit->displayControl, lcdInit->cursorControl, lcdInit->blinkingControl); //Display on/off control --> D = 1, C and B = 0. (Cursor and blink, last two bits)
+	LCD_CMD_DisplayControl(lcd, lcd->display, lcd->cursor, lcd->blinking); //Display on/off control --> D = 1, C and B = 0. (Cursor and blink, last two bits)
 }
 
-void lcd_send_custom_char(I2C_LCD_HandleTypeDef *lcd, uint8_t cgram_addr, uint8_t* pattern){
-	lcd_cmd_set_CGRAM_addr(lcd, cgram_addr);
-	while (*pattern) lcd_send_data(lcd, *pattern++);
+void LCD_SendCustomChar(I2C_LCD_HandleTypeDef *lcd, LCD_CustomCharAddress cgram_addr, uint8_t* pattern, LCD_CustomCharType type){
+	LCD_CMD_SetCGRAMAddr(lcd, cgram_addr);
+	for(int i = 0; i < type; i++){
+		LCD_SendData(lcd, *pattern++);
+	}
 }
 
-void lcd_send_string(I2C_LCD_HandleTypeDef *lcd,char *str)
+void LCD_SendString(I2C_LCD_HandleTypeDef *lcd,char *str)
 {
-	while (*str) lcd_send_data(lcd, *str++);
+	while (*str) LCD_SendData(lcd, *str++);
 }
 
