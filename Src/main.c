@@ -48,6 +48,8 @@ UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
 I2C_LCD_HandleTypeDef lcd1;
+uint8_t state = 0;
+uint8_t stateChange = 1;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -110,6 +112,13 @@ int main(void)
   LCD_SendData(&lcd1, CUSTOM_CHAR_5X8_1);
   HAL_Delay(2000);
   LCD_CMD_ClearDisplay(&lcd1);
+
+  uint8_t animation0[8] = {0x0E, 0x0E, 0x04, 0x04, 0x04, 0x0A, 0x0A, 0x00};
+  LCD_SendCustomChar(&lcd1, CUSTOM_CHAR_5X8_2, (uint8_t*) animation0, CHAR_5X8);
+
+  uint8_t animation1[8] = {0x0E, 0x0E, 0x04, 0x04, 0x04, 0x04, 0x04, 0x00};
+  LCD_SendCustomChar(&lcd1, CUSTOM_CHAR_5X8_3, (uint8_t*) animation1, CHAR_5X8);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -117,20 +126,124 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-
+	if(stateChange){
+		stateChange = 0;
+		LCD_CMD_ClearDisplay(&lcd1);
+		LCD_CMD_ReturnHome(&lcd1);
+		if(state == 0){
+			LCD_CMD_EntryModeSet(&lcd1, MOVE_CURSOR_INCREMENT);
+			LCD_Backlight(&lcd1, BACKLIGHT_ON);
+		}else if(state == 1){
+			LCD_CMD_EntryModeSet(&lcd1, MOVE_CURSOR_DECREMENT);
+			LCD_Backlight(&lcd1, BACKLIGHT_OFF);
+		}else if(state == 2){
+			LCD_Backlight(&lcd1, BACKLIGHT_ON);
+			LCD_CMD_EntryModeSet(&lcd1, MOVE_CURSOR_INCREMENT);
+			LCD_PutCursor(&lcd1, 0, 3);
+			LCD_SendString(&lcd1, "Shift Right");
+			LCD_CMD_EntryModeSet(&lcd1, SHIFT_DISPLAY_DECREMENT);
+		}else if(state == 3){
+			LCD_Backlight(&lcd1, BACKLIGHT_ON);
+			LCD_CMD_EntryModeSet(&lcd1, MOVE_CURSOR_INCREMENT);
+			LCD_PutCursor(&lcd1, 0, 3);
+			LCD_SendString(&lcd1, "Shift Left");
+			LCD_CMD_EntryModeSet(&lcd1, SHIFT_DISPLAY_INCREMENT);
+		}else if(state == 4){
+			LCD_Backlight(&lcd1, BACKLIGHT_ON);
+			LCD_CMD_EntryModeSet(&lcd1, MOVE_CURSOR_INCREMENT);
+			LCD_CMD_DisplayControl(&lcd1, DISPLAY_ON, CURSOR_OFF, BLINKING_OFF);
+			LCD_SendData(&lcd1, CUSTOM_CHAR_5X8_2);
+			LCD_PutCursor(&lcd1, 1, 0);
+			LCD_SendData(&lcd1, CUSTOM_CHAR_5X8_3);
+		}
+	}
     /* USER CODE BEGIN 3 */
-	for (int i=0;i<128;i++){
-		LCD_PutCursor(&lcd1, row, col);
+	switch(state){
+		case 0:
+			col = 0;
+			row = 0;
+			for (int i=0;i<128;i++){
+				LCD_PutCursor(&lcd1, row, col);
 
-		LCD_SendData(&lcd1, i+48);
+				LCD_SendData(&lcd1, i+48);
 
-  		col++;
+				col++;
 
- 		if (col > 15) {row++; col = 0;}
- 		if (row > 1) row=0;
+				if (col > 15) {row++; col = 0;}
+				if (row > 1) row=0;
 
- 		HAL_Delay(250);
-  	}
+				HAL_Delay(100);
+			}
+			break;
+		case 1:
+			col = 15;
+			row = 1;
+			for (int i=0;i<128;i++){
+				LCD_PutCursor(&lcd1, row, col);
+
+				LCD_SendData(&lcd1, i+48);
+
+				col--;
+
+				if (col < 0) {row--; col = 15;}
+				if (row < 0) row=1;
+
+				HAL_Delay(100);
+			}
+			break;
+		case 2:
+			LCD_PutCursor(&lcd1, 1, 39);
+			for(int i = 0; i < 40; i++){
+				LCD_SendData(&lcd1, 0x00);
+				HAL_Delay(250);
+			}
+			break;
+		case 3:
+			LCD_PutCursor(&lcd1, 1, 0);
+			for(int i = 0; i < 40; i++){
+				LCD_SendData(&lcd1, 0x00);
+				HAL_Delay(250);
+			}
+			break;
+		case 4:
+			for(int i = 0; i < 15; i++){
+				LCD_PutCursor(&lcd1, 0, 0);
+				if(i%2 == 0){
+					LCD_SendData(&lcd1, CUSTOM_CHAR_5X8_3);
+				}else{
+					LCD_SendData(&lcd1, CUSTOM_CHAR_5X8_2);
+				}
+
+				LCD_PutCursor(&lcd1, 1, 0);
+				if(i%2 == 0){
+					LCD_SendData(&lcd1, CUSTOM_CHAR_5X8_2);
+				}else{
+					LCD_SendData(&lcd1, CUSTOM_CHAR_5X8_3);
+				}
+
+				LCD_CMD_CursorOrDisplayShift(&lcd1, SHIFT_DISPLAY_RIGHT);
+				HAL_Delay(200);
+			}
+			for(int i = 0; i < 15; i++){
+				LCD_PutCursor(&lcd1, 0, 0);
+				if(i%2 == 0){
+					LCD_SendData(&lcd1, CUSTOM_CHAR_5X8_2);
+				}else{
+					LCD_SendData(&lcd1, CUSTOM_CHAR_5X8_3);
+				}
+
+				LCD_PutCursor(&lcd1, 1, 0);
+				if(i%2 == 0){
+					LCD_SendData(&lcd1, CUSTOM_CHAR_5X8_3);
+				}else{
+					LCD_SendData(&lcd1, CUSTOM_CHAR_5X8_2);
+				}
+				LCD_CMD_CursorOrDisplayShift(&lcd1, SHIFT_DISPLAY_LEFT);
+				HAL_Delay(200);
+			}
+			break;
+	}
+
   }
   /* USER CODE END 3 */
 }
@@ -283,17 +396,30 @@ static void MX_GPIO_Init(void)
 static void LCD1_init(void){
   lcd1.hi2c = &hi2c1;
   lcd1.address = 0x4E;
+  lcd1.backlight = BACKLIGHT_ON;
 
-  lcd1.functionSet = BITS4_LINES2_5X8DOTS;
-  lcd1.entryMode = MOVE_CURSOR_INCREMENT;
-  lcd1.display = DISPLAY_ON;
-  lcd1.cursor = CURSOR_ON;
-  lcd1.blinking = BLINKING_ON;
+  I2C_LCD_InitTypeDef lcd1Init;
 
-  LCD_init(&lcd1);
+  lcd1Init.lcdHandler = &lcd1;
+  lcd1Init.functionSet = BITS4_LINES2_5X8DOTS;
+  lcd1Init.entryMode = MOVE_CURSOR_INCREMENT;
+  lcd1Init.display = DISPLAY_ON;
+  lcd1Init.cursor = CURSOR_ON;
+  lcd1Init.blinking = BLINKING_ON;
+
+  LCD_init(&lcd1Init);
 }
 
-
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
+	if(GPIO_Pin == GPIO_PIN_13){
+		if(state < 4){
+			state++;
+		}else{
+			state = 0;
+		}
+		stateChange = 1;
+	}
+}
 /* USER CODE END 4 */
 
 /**

@@ -56,47 +56,40 @@
 #include "stm32f4xx_hal.h"
 #include <stdint.h>
 
-// Position of control bits in i2c data
-#define RS_bit ((uint8_t) 0x01)
-#define RW_bit ((uint8_t) 0x02)
-#define E_bit ((uint8_t) 0x04)
-
-
-
 // Enumerates for setting display options as described in datasheet pages 24-27
 typedef enum{
-	SHIFT_DISPLAY_INCREMENT = 0x07U, // Shift the hole display content to the left when a character is written to DDRAM
-	SHIFT_DISPLAY_DECREMENT = 0x05U, // Shift the hole display content to the right when a character is written to DDRAM
-	MOVE_CURSOR_INCREMENT = 0x06U,	// Decrements the DDRAM address by 1 when a character is written
-	MOVE_CURSOR_DECREMENT = 0x04U    // Decrements the DDRAM address by 1 when a character is written
+	SHIFT_DISPLAY_INCREMENT = 0x03U, // Shift the hole display content to the left when a character is written to DDRAM
+	SHIFT_DISPLAY_DECREMENT = 0x01U, // Shift the hole display content to the right when a character is written to DDRAM
+	MOVE_CURSOR_INCREMENT = 0x02U,	// Decrements the DDRAM address by 1 when a character is written
+	MOVE_CURSOR_DECREMENT = 0x00U    // Decrements the DDRAM address by 1 when a character is written
 } LCD_EntryMode;
 
 typedef enum{
-    DISPLAY_ON = 0x0CU, // Display data on DDRAM
-    DISPLAY_OFF = 0x08U // Data remains on DDRAM but is not displayed it on LCD
+    DISPLAY_ON = 0x04U, // Display data on DDRAM
+    DISPLAY_OFF = 0x00U // Data remains on DDRAM but is not displayed it on LCD
 } LCD_DisplayOnOff;
 
 typedef enum{
-	CURSOR_ON = 0x0AU, // Display a cursor on current DDRAM position
-	CURSOR_OFF = 0x08U // Do not display the cursor
+	CURSOR_ON = 0x02U, // Display a cursor on current DDRAM position
+	CURSOR_OFF = 0x00U // Do not display the cursor
 } LCD_CursorOnOff;
 
 typedef enum{
-	BLINKING_ON = 0x09U, // Blink the current DDRAM position
-	BLINKING_OFF = 0x08U // Do not blink current DDRAM position
+	BLINKING_ON = 0x01U, // Blink the current DDRAM position
+	BLINKING_OFF = 0x00U // Do not blink current DDRAM position
 } LCD_BlinkingOnOff;
 
 typedef enum{
     SHIFT_DISPLAY_RIGHT = 0x0CU, // Shift hole display content to the right
 	SHIFT_DISPLAY_LEFT = 0x08U,  // Shift hole display content to the left
-	MOVE_CURSOR_RIGHT = 0x00U,   // Move cursor to the right
-	MOVE_CURSOR_LEFT = 0x04U     // Move cursor to the left
+	MOVE_CURSOR_RIGHT = 0x04U,   // Move cursor to the right
+	MOVE_CURSOR_LEFT = 0x00U     // Move cursor to the left
 } LCD_CursorOrDisplayShift;
 
 typedef enum{
-	BITS4_LINES1_5X10DOTS = 0x24U, // 4 bit interface. 1 line display. 5X10 font
-	BITS4_LINES1_5X8DOTS = 0x20U,  // 4 bit interface. 1 line display. 5X8 font
-	BITS4_LINES2_5X8DOTS = 0x28U   // 4 bit interface. 2 line display. 5X8 font
+	BITS4_LINES1_5X10DOTS = 0x04U, // 4 bit interface. 1 line display. 5X10 font
+	BITS4_LINES1_5X8DOTS = 0x00U,  // 4 bit interface. 1 line display. 5X8 font
+	BITS4_LINES2_5X8DOTS = 0x08U   // 4 bit interface. 2 line display. 5X8 font
 } LCD_FunctionSetOptions;
 
 typedef enum{
@@ -106,17 +99,17 @@ typedef enum{
 
 typedef enum{
 	CUSTOM_CHAR_5X8_1 = 0x00U,
-	CUSTOM_CHAR_5X8_2 = 0x08U,
-	CUSTOM_CHAR_5X8_3 = 0x10U,
-	CUSTOM_CHAR_5X8_4 = 0x18U,
-	CUSTOM_CHAR_5X8_5 = 0x20U,
-	CUSTOM_CHAR_5X8_6 = 0x28U,
-	CUSTOM_CHAR_5X8_7 = 0x30U,
-	CUSTOM_CHAR_5X8_8 = 0x38U,
+	CUSTOM_CHAR_5X8_2 = 0x01U,
+	CUSTOM_CHAR_5X8_3 = 0x02U,
+	CUSTOM_CHAR_5X8_4 = 0x03U,
+	CUSTOM_CHAR_5X8_5 = 0x04U,
+	CUSTOM_CHAR_5X8_6 = 0x05U,
+	CUSTOM_CHAR_5X8_7 = 0x06U,
+	CUSTOM_CHAR_5X8_8 = 0x07U,
 	CUSTOM_CHAR_5X10_1 = 0x00U,
-	CUSTOM_CHAR_5X10_2 = 0x10U,
-	CUSTOM_CHAR_5X10_3 = 0x20U,
-	CUSTOM_CHAR_5X10_4 = 0x30U,
+	CUSTOM_CHAR_5X10_2 = 0x01U,
+	CUSTOM_CHAR_5X10_3 = 0x02U,
+	CUSTOM_CHAR_5X10_4 = 0x03U,
 } LCD_CustomCharAddress;
 
 typedef enum{
@@ -124,19 +117,24 @@ typedef enum{
 	CHAR_5X10 = 0x0AU,
 } LCD_CustomCharType;
 
-// Structs to handle LCD initialization and handler
+// Struct to handle LCD
 typedef struct{
 	I2C_HandleTypeDef *hi2c; // I2C interface to connected to the PCF8574
 	uint8_t address; //I2C address of the PCF8574 that controls
+	LCD_BacklightOnOff backlight;
+} I2C_LCD_HandleTypeDef;
+
+// Struct to handle LCD initialization
+typedef struct{
+	I2C_LCD_HandleTypeDef *lcdHandler;
 	LCD_FunctionSetOptions functionSet;
 	LCD_EntryMode entryMode;
 	LCD_DisplayOnOff display;
 	LCD_CursorOnOff cursor;
 	LCD_BlinkingOnOff blinking;
-	LCD_BacklightOnOff backlight;
-} I2C_LCD_HandleTypeDef;
+} I2C_LCD_InitTypeDef;
 
-void LCD_init(I2C_LCD_HandleTypeDef *LCD); // initialize lcd
+void LCD_init(I2C_LCD_InitTypeDef *LCD); // initialize lcd
 void LCD_CMD_ClearDisplay(I2C_LCD_HandleTypeDef *lcd); // clear lcd display and sets cursor to 0,0
 void LCD_CMD_ReturnHome(I2C_LCD_HandleTypeDef *lcd); // set cursor to 0,0
 void LCD_CMD_EntryModeSet(I2C_LCD_HandleTypeDef *lcd, LCD_EntryMode entryMode); // set entry mode of the LCD
@@ -147,5 +145,6 @@ void LCD_PutCursor(I2C_LCD_HandleTypeDef *lcd, int row, int col); // put cursor 
 void LCD_SendData(I2C_LCD_HandleTypeDef *lcd, char data); // send data to DDRAM or CGRAM
 void LCD_SendString(I2C_LCD_HandleTypeDef *lcd,char *str); // send string data to display sequentially
 void LCD_SendCustomChar(I2C_LCD_HandleTypeDef *lcd, LCD_CustomCharAddress cgram_addr, uint8_t* pattern, LCD_CustomCharType type); // send custom character to display
+void LCD_Backlight(I2C_LCD_HandleTypeDef *lcd, LCD_BacklightOnOff backlight);
 
 #endif /* HD44780_I2C_STM32F4_H_ */
