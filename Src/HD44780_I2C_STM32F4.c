@@ -88,11 +88,10 @@ void LCD_CMD_EntryModeSet(I2C_LCD_HandleTypeDef *lcd, LCD_EntryMode entryMode){
 	HAL_Delay(1);
 }
 
-void LCD_CMD_DisplayControl(I2C_LCD_HandleTypeDef *lcd, LCD_DisplayOnOff displayControl, LCD_CursorOnOff cursorControl, LCD_BlinkingOnOff blinkingControl){
-	uint8_t command =  displayControl | cursorControl | blinkingControl;
-	command |= 0x08; // set DB3 as required by function
-	command &= 0x0F; // clear bits irrelevant to this function
-	LCD_SendCMD(lcd, command);
+void LCD_CMD_DisplayControl(I2C_LCD_HandleTypeDef *lcd, LCD_DisplayControlOptions displayMode){
+	displayMode |= 0x08; // set DB3 as required by function
+	displayMode &= 0x0F; // clear bits irrelevant to this function
+	LCD_SendCMD(lcd, displayMode);
 	HAL_Delay(1);
 }
 
@@ -179,14 +178,14 @@ void LCD_init(I2C_LCD_InitTypeDef *lcdInit){
 	// Display initialization
 	LCD_CMD_FunctionSet(lcdInit->lcdHandler, lcdInit->functionSet); // Function set --> DL=0 (4 bit mode), N = 1 (2 line display) F = 0 (5x8 characters)
 	HAL_Delay(1);
-	LCD_SendCMD(lcdInit->lcdHandler, (DISPLAY_OFF | CURSOR_OFF | BLINKING_OFF)); //Display on/off control --> D=0,C=0, B=0  ---> display off
+	LCD_SendCMD(lcdInit->lcdHandler, DISPLAY_OFF); //Display on/off control --> D=0,C=0, B=0  ---> display off
 	HAL_Delay(1);
 	LCD_CMD_ClearDisplay(lcdInit->lcdHandler);  // clear display
 	HAL_Delay(1);
 	HAL_Delay(1);
 	LCD_CMD_EntryModeSet(lcdInit->lcdHandler, lcdInit->entryMode); //Entry mode set --> I/D = 1 (increment cursor) & S = 0 (no shift)
 	HAL_Delay(1);
-	LCD_CMD_DisplayControl(lcdInit->lcdHandler, lcdInit->display, lcdInit->cursor, lcdInit->blinking); //Display on/off control --> D = 1, C and B = 0. (Cursor and blink, last two bits)
+	LCD_CMD_DisplayControl(lcdInit->lcdHandler, lcdInit->displayMode); //Display on/off control --> D = 1, C and B = 0. (Cursor and blink, last two bits)
 }
 
 void LCD_SendCustomChar(I2C_LCD_HandleTypeDef *lcd, LCD_CustomCharAddress cgram_addr, uint8_t* pattern, LCD_CustomCharType type){

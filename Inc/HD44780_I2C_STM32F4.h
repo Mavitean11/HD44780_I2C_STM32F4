@@ -65,19 +65,12 @@ typedef enum{
 } LCD_EntryMode;
 
 typedef enum{
-    DISPLAY_ON = 0x04U, // Display data on DDRAM
-    DISPLAY_OFF = 0x00U // Data remains on DDRAM but is not displayed it on LCD
-} LCD_DisplayOnOff;
-
-typedef enum{
-	CURSOR_ON = 0x02U, // Display a cursor on current DDRAM position
-	CURSOR_OFF = 0x00U // Do not display the cursor
-} LCD_CursorOnOff;
-
-typedef enum{
-	BLINKING_ON = 0x01U, // Blink the current DDRAM position
-	BLINKING_OFF = 0x00U // Do not blink current DDRAM position
-} LCD_BlinkingOnOff;
+	DISPLAY_OFF = 0x00U, // Data on DDRAM is not displayed on LCD. You can still write to DDRAM
+	DISPLAY_ON_CURSOR_OFF_BLINKING_OFF = 0x04U, // Display data on LCD
+	DISPLAY_ON_CURSOR_OFF_BLINKING_ON = 0x05U,	// Display data and blink current DDRAM address
+	DISPLAY_ON_CURSOR_ON_BLINKING_OFF = 0x06U, // Display data and a cursor current DDRAM address
+	DISPLAY_ON_CURSOR_ON_BLINKING_ON = 0x07U // Display data with cursor and blink effect
+} LCD_DisplayControlOptions;
 
 typedef enum{
     SHIFT_DISPLAY_RIGHT = 0x0CU, // Shift hole display content to the right
@@ -129,16 +122,14 @@ typedef struct{
 	I2C_LCD_HandleTypeDef *lcdHandler;
 	LCD_FunctionSetOptions functionSet;
 	LCD_EntryMode entryMode;
-	LCD_DisplayOnOff display;
-	LCD_CursorOnOff cursor;
-	LCD_BlinkingOnOff blinking;
+	LCD_DisplayControlOptions displayMode;
 } I2C_LCD_InitTypeDef;
 
 void LCD_init(I2C_LCD_InitTypeDef *LCD); // initialize lcd
 void LCD_CMD_ClearDisplay(I2C_LCD_HandleTypeDef *lcd); // clear lcd display and sets cursor to 0,0
 void LCD_CMD_ReturnHome(I2C_LCD_HandleTypeDef *lcd); // set cursor to 0,0
 void LCD_CMD_EntryModeSet(I2C_LCD_HandleTypeDef *lcd, LCD_EntryMode entryMode); // set entry mode of the LCD
-void LCD_CMD_DisplayControl(I2C_LCD_HandleTypeDef *lcd, LCD_DisplayOnOff displayControl, LCD_CursorOnOff cursorControl, LCD_BlinkingOnOff blinkingControl); // configure display, cursor and blinking
+void LCD_CMD_DisplayControl(I2C_LCD_HandleTypeDef *lcd, LCD_DisplayControlOptions displayMode); // configure display, cursor and blinking
 void LCD_CMD_CursorOrDisplayShift(I2C_LCD_HandleTypeDef *lcd, LCD_CursorOrDisplayShift cursorOrDisplayShift); // set display behaviour on receivieng a character
 void LCD_CMD_FunctionSet(I2C_LCD_HandleTypeDef *lcd, LCD_FunctionSetOptions functionSet); // set display interface length, lines, and char format
 void LCD_PutCursor(I2C_LCD_HandleTypeDef *lcd, int row, int col); // put cursor in row, col postion
