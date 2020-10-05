@@ -52,11 +52,24 @@
 #ifndef HD44780_I2C_STM32F4_H_
 #define HD44780_I2C_STM32F4_H_
 
-/* Includes ------------------------------------------------------------------*/
+/* Inclui ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
 #include <stdint.h>
 
-// Enumerates for setting display options as described in datasheet pages 24-27
+/* Macros Exportadas ---------------------------------------------------------*/
+/* Para LCD_CMD_CursorOrDisplayShift -----------------------------------------*/
+#define LCD_CMD_MoveCursorRight(LCD) LCD_CMD_CursorOrDisplayShift(LCD, MOVE_CURSOR_RIGHT)
+#define LCD_CMD_MoveCursorLeft(LCD) LCD_CMD_CursorOrDisplayShift(LCD, MOVE_CURSOR_LEFT)
+#define LCD_CMD_ShiftDisplayRight(LCD) LCD_CMD_CursorOrDisplayShift(LCD, SHIFT_DISPLAY_RIGHT)
+#define LCD_CMD_ShiftDisplayLeft(LCD) LCD_CMD_CursorOrDisplayShift(LCD, SHIFT_DISPLAY_LEFT)
+
+/* Para LCD_Backlight -------------------------------------------------------*/
+#define LCD_BacklightON(LCD) LCD_Backlight(LCD, BACKLIGHT_ON)
+#define LCD_BacklightOFF(LCD) LCD_Backlight(LCD, BACKLIGHT_OFF)
+
+/* Tipos Exportados ---------------------------------------------------------*/
+
+// Opções de modo de Entrada do HD44780
 typedef enum{
 	SHIFT_DISPLAY_INCREMENT = 0x03U, // Shift the hole display content to the left when a character is written to DDRAM
 	SHIFT_DISPLAY_DECREMENT = 0x01U, // Shift the hole display content to the right when a character is written to DDRAM
@@ -64,6 +77,7 @@ typedef enum{
 	MOVE_CURSOR_DECREMENT = 0x00U    // Decrements the DDRAM address by 1 when a character is written
 } LCD_EntryMode;
 
+// Opções de controle do display do HD44780
 typedef enum{
 	DISPLAY_OFF = 0x00U, // Data on DDRAM is not displayed on LCD. You can still write to DDRAM
 	DISPLAY_ON_CURSOR_OFF_BLINKING_OFF = 0x04U, // Display data on LCD
@@ -72,6 +86,7 @@ typedef enum{
 	DISPLAY_ON_CURSOR_ON_BLINKING_ON = 0x07U // Display data with cursor and blink effect
 } LCD_DisplayControlOptions;
 
+// Opções de movimento do cursor do HD44780
 typedef enum{
     SHIFT_DISPLAY_RIGHT = 0x0CU, // Shift hole display content to the right
 	SHIFT_DISPLAY_LEFT = 0x08U,  // Shift hole display content to the left
@@ -79,17 +94,20 @@ typedef enum{
 	MOVE_CURSOR_LEFT = 0x00U     // Move cursor to the left
 } LCD_CursorOrDisplayShift;
 
+// Opções de tamanho da interface de comunicação, linhas do display e fontes do HD44780
 typedef enum{
 	BITS4_LINES1_5X10DOTS = 0x04U, // 4 bit interface. 1 line display. 5X10 font
 	BITS4_LINES1_5X8DOTS = 0x00U,  // 4 bit interface. 1 line display. 5X8 font
 	BITS4_LINES2_5X8DOTS = 0x08U   // 4 bit interface. 2 line display. 5X8 font
 } LCD_FunctionSetOptions;
 
+// Opções do backlight do display
 typedef enum{
 	BACKLIGHT_ON = 0x08U,
 	BACKLIGHT_OFF = 0x00U,
 } LCD_BacklightOnOff;
 
+// Endereços de memória para caracteres personalizados
 typedef enum{
 	CUSTOM_CHAR_5X8_1 = 0x00U,
 	CUSTOM_CHAR_5X8_2 = 0x01U,
@@ -105,19 +123,20 @@ typedef enum{
 	CUSTOM_CHAR_5X10_4 = 0x03U,
 } LCD_CustomCharAddress;
 
+// Opções de fonte para caracteres personalizados
 typedef enum{
 	CHAR_5X8 = 0x08U,
 	CHAR_5X10 = 0x0AU,
 } LCD_CustomCharType;
 
-// Struct to handle LCD
+// Manipulador do LCD
 typedef struct{
 	I2C_HandleTypeDef *hi2c; // I2C interface to connected to the PCF8574
 	uint8_t address; //I2C address of the PCF8574 that controls
 	LCD_BacklightOnOff backlight;
 } I2C_LCD_HandleTypeDef;
 
-// Struct to handle LCD initialization
+// Manipulador de inicialização do LCD
 typedef struct{
 	I2C_LCD_HandleTypeDef *lcdHandler;
 	LCD_FunctionSetOptions functionSet;
@@ -125,17 +144,25 @@ typedef struct{
 	LCD_DisplayControlOptions displayMode;
 } I2C_LCD_InitTypeDef;
 
+
+/* Funcões Exportadas ---------------------------------------------------*/
+// Função de inicialização
 void LCD_init(I2C_LCD_InitTypeDef *LCD); // initialize lcd
-void LCD_CMD_ClearDisplay(I2C_LCD_HandleTypeDef *lcd); // clear lcd display and sets cursor to 0,0
-void LCD_CMD_ReturnHome(I2C_LCD_HandleTypeDef *lcd); // set cursor to 0,0
-void LCD_CMD_EntryModeSet(I2C_LCD_HandleTypeDef *lcd, LCD_EntryMode entryMode); // set entry mode of the LCD
-void LCD_CMD_DisplayControl(I2C_LCD_HandleTypeDef *lcd, LCD_DisplayControlOptions displayMode); // configure display, cursor and blinking
-void LCD_CMD_CursorOrDisplayShift(I2C_LCD_HandleTypeDef *lcd, LCD_CursorOrDisplayShift cursorOrDisplayShift); // set display behaviour on receivieng a character
-void LCD_CMD_FunctionSet(I2C_LCD_HandleTypeDef *lcd, LCD_FunctionSetOptions functionSet); // set display interface length, lines, and char format
-void LCD_PutCursor(I2C_LCD_HandleTypeDef *lcd, int row, int col); // put cursor in row, col postion
-void LCD_SendData(I2C_LCD_HandleTypeDef *lcd, char data); // send data to DDRAM or CGRAM
-void LCD_SendString(I2C_LCD_HandleTypeDef *lcd,char *str); // send string data to display sequentially
-void LCD_SendCustomChar(I2C_LCD_HandleTypeDef *lcd, LCD_CustomCharAddress cgram_addr, uint8_t* pattern, LCD_CustomCharType type); // send custom character to display
-void LCD_Backlight(I2C_LCD_HandleTypeDef *lcd, LCD_BacklightOnOff backlight);
+
+// Funções de Comandos para o HD44780
+void LCD_CMD_ClearDisplay(I2C_LCD_HandleTypeDef *lcd); // Limpa o display e retorna o cursor para 0,0
+void LCD_CMD_ReturnHome(I2C_LCD_HandleTypeDef *lcd); // Retorna o cursor para 0,0
+void LCD_CMD_EntryModeSet(I2C_LCD_HandleTypeDef *lcd, LCD_EntryMode entryMode); // Define o modo de entrada do LCD
+void LCD_CMD_DisplayControl(I2C_LCD_HandleTypeDef *lcd, LCD_DisplayControlOptions displayMode); // Configura o display a exibição do cursor e o efeito de piscar
+void LCD_CMD_CursorOrDisplayShift(I2C_LCD_HandleTypeDef *lcd, uint8_t cursorOrDisplayShift); // Move o cursor ou desloca o display.
+void LCD_CMD_FunctionSet(I2C_LCD_HandleTypeDef *lcd, LCD_FunctionSetOptions functionSet); // Define o tamanho da interface, numero de linhas do display e a fonte dos caracteres
+
+void LCD_SendData(I2C_LCD_HandleTypeDef *lcd, char data); // Envia dados para o endereço atual do HD44780
+void LCD_SendString(I2C_LCD_HandleTypeDef *lcd,char *str); // Envia os caracteres da string sequencialmente para o display
+
+void LCD_PutCursor(I2C_LCD_HandleTypeDef *lcd, int row, int col); // Coloca o cursor na posição row, col
+
+void LCD_SendCustomChar(I2C_LCD_HandleTypeDef *lcd, LCD_CustomCharAddress cgram_addr, uint8_t* pattern, LCD_CustomCharType type); // Envia um carctere customizazdo pelo usuario
+void LCD_Backlight(I2C_LCD_HandleTypeDef *lcd, LCD_BacklightOnOff backlight); // Liga ou desliga a luz de fundo do display
 
 #endif /* HD44780_I2C_STM32F4_H_ */

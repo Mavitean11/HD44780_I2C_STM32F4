@@ -23,7 +23,7 @@ void EX_HelloWorld(I2C_LCD_HandleTypeDef *lcd){
 	// Write Hello World message on display
 	LCD_PutCursor(lcd, 0,0);
 	LCD_SendString(lcd, " Hello World!");
-	LCD_CMD_CursorOrDisplayShift(lcd, MOVE_CURSOR_RIGHT);
+	LCD_CMD_MoveCursorRight(lcd);
 	LCD_SendData(lcd, CUSTOM_CHAR_5X8_1);
 	LCD_PutCursor(lcd, 1,0);
 	LCD_SendString(lcd, "HD44780 4STM API");
@@ -151,7 +151,7 @@ void EX_Animation(I2C_LCD_HandleTypeDef *lcd){
 			LCD_SendData(lcd, CUSTOM_CHAR_5X8_2);
 		}
 
-		LCD_CMD_CursorOrDisplayShift(lcd, SHIFT_DISPLAY_RIGHT);
+		LCD_CMD_ShiftDisplayRight(lcd);
 		HAL_Delay(200);
 	}
 
@@ -170,7 +170,7 @@ void EX_Animation(I2C_LCD_HandleTypeDef *lcd){
 		}else{
 			LCD_SendData(lcd, CUSTOM_CHAR_5X8_1);
 		}
-		LCD_CMD_CursorOrDisplayShift(lcd, SHIFT_DISPLAY_LEFT);
+		LCD_CMD_ShiftDisplayLeft(lcd);
 		HAL_Delay(200);
 	}
 }
