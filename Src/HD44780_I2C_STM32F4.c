@@ -54,8 +54,7 @@
 #define E_bit ((uint8_t) 0x04)
 
 // Includes
-#include <stdint.h>
-#include <HD44780_I2C_STM32F4.h>
+#include "HD44780_I2C_STM32F4.h"
 
 // Private functions that sends commands
 void LCD_SendCMD(I2C_LCD_HandleTypeDef *lcd, char cmd){

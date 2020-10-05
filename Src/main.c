@@ -73,8 +73,7 @@ static void LCD1_init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-  int row=0;
-  int col=0;
+
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
