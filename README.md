@@ -17,13 +17,28 @@ Esse módulo é baseado em um display LCD 16x02 com controlador [HD44780](https://
 |    P7   |                 D7                |
 
 # Utilização da API
-Para utilizar a API copie HD44780\_I2C\_STM32F4.c e HD44780\_I2C\_STM32F4.h, encontrados nas pastas Src e Inc respectivamente, e os coloque nas mesmas pastas em seu projeto. Inclua 
+Para utilizar a API copie HD44780\_I2C\_STM32F4.c e HD44780\_I2C\_STM32F4.h, encontrados nas pastas Src e Inc respectivamente, e os coloque nas mesmas pastas em seu projeto. Inclua o header onde ele for necessário
 
 ```c
 #include "HD44780_I2C_STM32F4.h"
 ```
 
-A API foi projetada de forma que seu uso seja parecido com o de uma biblioteca HAL. O primeiro passo para utiliaz-lá é então inicializar o componente.
+A API foi projetada de forma que seu uso seja parecido com o de uma biblioteca HAL. O primeiro passo para utiliaz-lá é então inicializar o componente. São sugeridos os seguintes passos:
+
+1. Declare um manipulador do LCD, do novo tipo I2C_LCD_HandleTypeDef
+
+```c
+I2C_LCD_HandleTypeDef lcd1;
+```
+
+2. Crie uma função para inicializar o LCD.
+
+	* Protótipo
+	
+	```c
+	static void LCD1_init(void);
+	```
+
 
   
 
