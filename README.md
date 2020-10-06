@@ -31,7 +31,7 @@ A API foi projetada de forma que seu uso seja parecido com o de uma biblioteca H
 I2C_LCD_HandleTypeDef lcd1;
 ```
 
-2. Crie uma função para inicializar o LCD.
+2. Crie uma função para inicializar o LCD. E a chame antes de entrar no loop principal de sua aplicação.
 
 	* Protótipo
 	
@@ -40,10 +40,11 @@ I2C_LCD_HandleTypeDef lcd1;
 	```
 
 	* Implementação
+	
 	```c
 	static void LCD1_init(void){
 	  lcd1.hi2c = &hi2c1; // Interface I2C a qual o LCD está conectado
-	  lcd1.address = 0x4E; // Endereço I2C do LCD já deslocado de 1 bit para a esquerda. (0x4E é o padrão para o módulo utilizado.
+	  lcd1.address = 0x4E; // Endereço I2C do LCD já deslocado de 1 bit para a esquerda (0x4E é o padrão para o módulo utilizado)
 	  lcd1.backlight = BACKLIGHT_ON; // Opção para a luz de fundo
 	
 	  I2C_LCD_InitTypeDef lcd1Init; // Armazena as configurações iniciais do LCD
@@ -56,6 +57,13 @@ I2C_LCD_HandleTypeDef lcd1;
 	  LCD_init(&lcd1Init); // Realiza os procedimentos de inicialização do LCD.
 	}
 	```
+	
+	* Chame a função.
+	
+	```c
+	LCD1_init();
+	```
 
-  
+# Outros recursos neste repositório
+Além dos arquivos fonte e cabeçalho da API, você encontra um projeto para demonstrar o funcionamento da API. Os arquivos exemplo.c e exemplo.h contem 6 exemplos de uso da API. Na main.c do projeto encontra-se implementada uma máquina de estados finitos para navegar pelos diferentes exemplos pressionando o botão de usuário. Na aaplicação foi usada a interface I2C1 do microcontrolador e o botão de usuário presente na placa no modo de interrupção para navegar entre os exemplos. 
 
