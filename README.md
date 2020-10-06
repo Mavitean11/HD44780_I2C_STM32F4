@@ -42,18 +42,18 @@ I2C_LCD_HandleTypeDef lcd1;
 	* Implementação
 	```c
 	static void LCD1_init(void){
-	  lcd1.hi2c = &hi2c1;
-	  lcd1.address = 0x4E;
-	  lcd1.backlight = BACKLIGHT_ON;
+	  lcd1.hi2c = &hi2c1; // Interface I2C a qual o LCD está conectado
+	  lcd1.address = 0x4E; // Endereço I2C do LCD já deslocado de 1 bit para a esquerda. (0x4E é o padrão para o módulo utilizado.
+	  lcd1.backlight = BACKLIGHT_ON; // Opção para a luz de fundo
 	
-	  I2C_LCD_InitTypeDef lcd1Init;
+	  I2C_LCD_InitTypeDef lcd1Init; // Armazena as configurações iniciais do LCD
 	
-	  lcd1Init.lcdHandler = &lcd1;
+	  lcd1Init.lcdHandler = &lcd1; 
 	  lcd1Init.functionSet = BITS4_LINES2_5X8DOTS;
 	  lcd1Init.entryMode = MOVE_CURSOR_INCREMENT;
 	  lcd1Init.displayMode = DISPLAY_ON_CURSOR_ON_BLINKING_ON;
 	
-	  LCD_init(&lcd1Init);
+	  LCD_init(&lcd1Init); // Realiza os procedimentos de inicialização do LCD.
 	}
 	```
 
