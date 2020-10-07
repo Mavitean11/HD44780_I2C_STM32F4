@@ -1,61 +1,71 @@
 /*
  * HD44780_I2C_STM32F4.c
- * Copyright (C) 2020  Marco Vinicio T. Andrade <mvta00@ufmg.br>
- * Version 1.0 - API with the following implemented functions:
- * void lcd_init(I2C_LCD_InitStruct *LCD);
- * void lcd_cmd_clear_display(I2C_LCD_HandleTypeDef *lcd);
- * void lcd_cmd_return_home(I2C_LCD_HandleTypeDef *lcd);
- * void lcd_cmd_entry_mode_set(I2C_LCD_HandleTypeDef *lcd, ENTRY_MODE entryMode);
- * void lcd_cmd_display_control(I2C_LCD_HandleTypeDef *lcd, DISPLAY_CONTROL displayControl, CURSOR_CONTROL cursorControl, BLINKING_CONTROL blinkingControl);
- * void lcd_cmd_cursor_or_display_shift(I2C_LCD_HandleTypeDef *lcd, CURSOR_OR_DISPLAY_SHIFT cursorOrDisplayShift);
- * void lcd_function_set(I2C_LCD_HandleTypeDef *lcd, FUNCTION_SET_OPTION functionSet);
- * void lcd_put_cur(I2C_LCD_HandleTypeDef *lcd, int row, int col);
- * void lcd_send_data(I2C_LCD_HandleTypeDef *lcd, char data);
- * void lcd_send_string(I2C_LCD_HandleTypeDef *lcd,char *str);
+ * Copyright (C) 2020
+ * Autores:
+ * Eric Drumond Rocha <edr-1996@ufmg.br>,
+ * João Paulo Fernandes Bonfim <jfernandesbonfim282@gmail.com> e
+ * Marco Vinicio T. Andrade <marcovinicio@ufmg.br>
+ * Version 1.0 - API com as seguintes funções:
+ * void LCD_init(I2C_LCD_InitTypeDef *LCD);
+ * void LCD_CMD_ClearDisplay(I2C_LCD_HandleTypeDef *lcd);
+ * void LCD_CMD_ReturnHome(I2C_LCD_HandleTypeDef *lcd);
+ * void LCD_CMD_EntryModeSet(I2C_LCD_HandleTypeDef *lcd, LCD_EntryMode entryMode);
+ * void LCD_CMD_DisplayControl(I2C_LCD_HandleTypeDef *lcd, LCD_DisplayControlOptions displayMode);
+ * void LCD_CMD_CursorOrDisplayShift(I2C_LCD_HandleTypeDef *lcd, uint8_t cursorOrDisplayShift);
+ * void LCD_CMD_FunctionSet(I2C_LCD_HandleTypeDef *lcd, LCD_FunctionSetOptions functionSet);
+ * void LCD_PutCursor(I2C_LCD_HandleTypeDef *lcd, int row, int col);
+ * void LCD_Backlight(I2C_LCD_HandleTypeDef *lcd, LCD_BacklightOnOff backlight);
+ * void LCD_SendData(I2C_LCD_HandleTypeDef *lcd, char data);
+ * void LCD_SendString(I2C_LCD_HandleTypeDef *lcd,char *str);
+ * void LCD_SendCustomChar(I2C_LCD_HandleTypeDef *lcd, LCD_CustomCharAddress cgram_addr, uint8_t* pattern, LCD_CustomCharType type);
  *
- * Based on the i2c-lcd library implementation accessed at
- * https://controllerstech.com/i2c-lcd-in-stm32/
+ * Baseado na API i2c-lcd accessada em: https://controllerstech.com/i2c-lcd-in-stm32/
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * Esta API foi desenvolvida como trabalho da disciplina de
+ * Programação de Sistemas Embarcados da UFMG – Prof. Ricardo de Oliveira Duarte – Departamento de Engenharia Eletrônica.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * Esse programa é software livre; Você pode redistribuí-lo e/ou modificá-lo
+ * nos termos da Licença Pública Geral GNU publicada pela
+ * Free Software Foundation; Na versão 2 (ou superior) da licença.
  *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
+ * Esse programa é distribuidp na esperança de que será útil, mas sem nenhuma
+ * GARANTIA; Nem mesmo quanto a sua COMERCIABILIDADE ou ADEQUAÇÂO A UM APLICAÇÂO ESPECIFICA.
+ * Para mais detealhes refira-se a Licença Pública Geral GNU.
+ *
+ * Você deve ter recebido uma cópia da Licença Pública Geral GNU
+ * junto com esse progama; Caso não tenha recebido, escreva para:
+ * Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * Created on: 11 de sep de 2020
- * Institution: UFMG
- * This API contain functions to provide use of the LCD 16X2 based on the
- * HD44780(https://www.sparkfun.com/datasheets/LCD/HD44780.pdf)
- * LCD driver and controller with I2C communication using the
- * PCF8574(https://www.ti.com/lit/ds/symlink/pcf8574.pdf) I/O expander for I@C bus.
- * The HD44780 and PCF8574 connection is described below:
+ * Criado em: 11 de setembro de 2020
+ * Instituição: UFMG
+ * Essa API contém funções para usar com o LCD16X2 baseado no controlador
+ * HD44780(https://www.sparkfun.com/datasheets/LCD/HD44780.pdf) com comunicação
+ * I2C utilizando o expansor de I/O PCF8574(https://www.ti.com/lit/ds/symlink/pcf8574.pdf)
+ * A conexão entre HD44780 e PCF8574 é a seguinte:
  * PCF8574		HDD44780
  * P0		->	RS
  * P1		->	R/W
  * P2		->	E
- * P3		->	Something related to LCD backlight
+ * P3		->	Backlight control circuit
  * P4		->	D4
  * P5		->	D5
  * P6		->	D6
  * P7		->	D7
  */
 
-// Define as posições dos bits de controle do HD44780 na comunicação i2c de acordo com a conexão com o PC8574
+/* Posições dos bits de controle do HD44780 na comunicação i2c de acordo com a conexão com o PC8574 */
 #define RS_bit ((uint8_t) 0x01)
 #define RW_bit ((uint8_t) 0x02)
 #define E_bit ((uint8_t) 0x04)
 
-// Includes
+/* Includes ---------------------------------------------------------------------------------------*/
 #include "HD44780_I2C_STM32F4.h"
 
+
+/* Implementações das funções ---------------------------------------------------------------------*/
+
+/* Função não exportada ---------------------------------------------------------------------------*/
 /****************************************************
  * Funcao:		void LCD_SendCMD(I2C_LCD_HandleTypeDef *lcd, char cmd)
  * Entrada:		I2C_LCD_HandleTypeDef *lcd e char cmd
@@ -74,6 +84,7 @@ void LCD_SendCMD(I2C_LCD_HandleTypeDef *lcd, char cmd){
   	HAL_I2C_Master_Transmit(lcd->hi2c, lcd->address,(uint8_t *) data_t, 4, 100);
 } //Fim do
 
+/* Funções exportadas ----------------------------------------------------------------------------*/
 /****************************************************
  * Funcao:		void LCD_CMD_ClearDisplay(I2C_LCD_HandleTypeDef *lcd)
  * Entrada:		I2C_LCD_HandleTypeDef *lcd
@@ -126,7 +137,9 @@ void LCD_CMD_DisplayControl(I2C_LCD_HandleTypeDef *lcd, LCD_DisplayControlOption
  * Funcao:		void LCD_CMD_CursorOrDisplayShift(I2C_LCD_HandleTypeDef *lcd, LCD_CursorOrDisplayShift cursorOrDisplayShift)
  * Entrada:		I2C_LCD_HandleTypeDef *lcd e LCD_CursorOrDisplayShift cursorOrDisplayShift
  * Saida:		void
- * Descricao:	Move o cursor ou o desoca o display LCD de acordo com cursorOrDisplayShift
+ * Descricao:	Move o cursor ou o desloca o display LCD de acordo com cursorOrDisplayShift. Pode ser utilizada atraves das macros
+ * 				LCD_CMD_MoveCursorRight(&lcd), LCD_CMD_MoveCursorLeft(&lcd),
+ * 				LCD_CMD_ShiftDisplayRight(&lcd) e LCD_CMD_ShiftDisplayLeft(&lcd)
  ***************************************************/
 void LCD_CMD_CursorOrDisplayShift(I2C_LCD_HandleTypeDef *lcd, LCD_CursorOrDisplayShift cursorOrDisplayShift){
 	cursorOrDisplayShift |= 0x10; // set DB4 as required by function
@@ -139,7 +152,7 @@ void LCD_CMD_CursorOrDisplayShift(I2C_LCD_HandleTypeDef *lcd, LCD_CursorOrDispla
  * Funcao:		LCD_CMD_FunctionSet(I2C_LCD_HandleTypeDef *lcd, LCD_FunctionSetOptions functionSet)
  * Entrada:		I2C_LCD_HandleTypeDef *lcd e LCD_FunctionSetOptions functionSet
  * Saida:		void
- * Descricao:	Move o cursor ou o desoca o display LCD de acordo com LCD_CursorOrDisplayShift
+ * Descricao:	Define o tamanho da interface de comunicação com o display, o número de linhas e a fonte dos caracteres.
  ***************************************************/
 void LCD_CMD_FunctionSet(I2C_LCD_HandleTypeDef *lcd, LCD_FunctionSetOptions functionSet){
 	functionSet |= 0x20; // set DB5 as required by function
@@ -178,7 +191,7 @@ void LCD_CMD_SetDDRAMAddr(I2C_LCD_HandleTypeDef *lcd, uint8_t address){
  * Funcao:		void LCD_SendData(I2C_LCD_HandleTypeDef *lcd, char data)
  * Entrada:		I2C_LCD_HandleTypeDef *lcd e char data
  * Saida:		void
- * Descricao:	Envia "data" para a posiçãoi atual de memória do LCD
+ * Descricao:	Envia "data" para a posição atual de memória do LCD
  ***************************************************/
 void LCD_SendData(I2C_LCD_HandleTypeDef *lcd, char data){
 	char data_u, data_l;
@@ -207,7 +220,6 @@ void LCD_PutCursor(I2C_LCD_HandleTypeDef *lcd, int row, int col){
             col |= 0x40;
             break;
     }
-
     LCD_CMD_SetDDRAMAddr(lcd, col);
 } //Fim fo void LCD_PutCursor(I2C_LCD_HandleTypeDef *lcd, int row, int col)
 
@@ -289,7 +301,8 @@ void LCD_SendString(I2C_LCD_HandleTypeDef *lcd, char *str){
  * Funcao:		void LCD_Backlight(I2C_LCD_HandleTypeDef *lcd, LCD_BacklightOnOff backlight)
  * Entrada:		I2C_LCD_HandleTypeDef *lcd e char *str
  * Saida:		void
- * Descricao:	Liga (backlight=BACKLIGHT_ON) ou desliga (backlight=BACKLIGHT_OFF) a luz de fundo do LCD
+ * Descricao:	Liga ou desliga a luz de fundo do LCD. Pode saer utilizada pelas macros
+ * 				LCD_BacklightON(&lcd) e LCD_BacklightOFF(&lcd)
  ***************************************************/
 void LCD_Backlight(I2C_LCD_HandleTypeDef *lcd, LCD_BacklightOnOff backlight){
 	lcd->backlight = backlight;
