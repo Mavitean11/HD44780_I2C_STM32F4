@@ -2,6 +2,12 @@
 
 Essa API fornece funções para controlar displays LCD através da interface I2C de micro-controladores da familia STMF4. Foi desenvolvida utilizando o [modulo display LCD 16x2 já com módulo I2C integrado](https://www.arduinoecia.com.br/modulo-i2c-display-16x2-arduino/) e a placa de desenvolvimento da [Nucleo-64 STM32F410]. Esta API foi desenvolvida como trabalho da disciplina de Programação de Sistemas Embarcados da UFMG – Prof. Ricardo de Oliveira Duarte – Departamento de Engenharia Eletrônica. 
 
+## Autores
+
+* Eric Drumond Rocha <[edr-1996@ufmg.br](edr-1996@ufmg.br)>
+* João Paulo Fernandes Bonfim <[jfernandesbonfim282@gmail.com](jfernandesbonfim282@gmail.com)>
+* Marco Vinicio T. Andrade <[marcovinicio@ufmg.br](marcovinicio@ufmg.br)>
+
 ## Display LCD e interface I2C
 Esse módulo é baseado em um display LCD 16x02 com controlador [HD44780](https://www.sparkfun.com/datasheets/LCD/HD44780.pdf). A interface I2C é feita pelo expansor de I/O [PCF8574](https://www.nxp.com/docs/en/data-sheet/PCF8574_PCF8574A.pdf). A conexão entre esses dois componentes é apresentada na tabela abaixo:
 
