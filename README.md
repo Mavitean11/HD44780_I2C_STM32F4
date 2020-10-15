@@ -142,7 +142,7 @@ Essa API disponibiliza 12 funções para o usuário. A maioria delas tem um paramet
 	
 	* LCD_CustomCharType type: CHAR_5X8 se caractere é um retângulo de 5x8 ou CHAR_5X10 se o caractere é de 5x10 pixels.
 	
-	* uint8_t* pattern: Vetor de tamanho igual ao número de linhas do caractere. Cada posição do vetor representa uma linha do caractere, começando do topo do caractere. Os 5 bits menos significativos representam os pixels da linha.
+	* uint8_t* pattern: Vetor de tamanho igual ao número de linhas do caractere. Cada posição do vetor representa uma linha do caractere, começando do topo do caractere. Os 5 bits menos significativos representam os pixels da linha. O [GlyphGenerator](https://kakedev.github.io/GlyphGenerator/) é uma ferramenta online para gerar caracteres para o display. Ela é focada em arduino mas é possível utiliza-lá para gerar o vetor 'pattern'.
 	
 	* LCD_CustomCharAddress cgram_addr: Endereço onde o caractere será armazenado. São disponibilzados 8 endereçõs para carcteres de 5x8 acessados pelos valores CUSTOM_CHAR_5X8_N (N = 1 a 8). Caso esteja trabalhando com fontes de 5x10 apenas 4 endereços estarão disponiveis, acessados pelos valores CUSTOM_CHAR_5X10_M (M = 1 a 4).
 	
