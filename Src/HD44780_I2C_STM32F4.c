@@ -285,6 +285,7 @@ void LCD_SendCustomChar(I2C_LCD_HandleTypeDef *lcd, LCD_CustomCharAddress cgram_
 	for(int i = 0; i < type; i++){
 		LCD_SendData(lcd, *pattern++);
 	}
+	LCD_CMD_SetDDRAMAddr(lcd, 0x00);
 } //Fim do void LCD_SendCustomChar(I2C_LCD_HandleTypeDef *lcd, LCD_CustomCharAddress cgram_addr, uint8_t* pattern, LCD_CustomCharType type)
 
 /****************************************************

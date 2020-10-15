@@ -161,7 +161,7 @@ void LCD_CMD_ClearDisplay(I2C_LCD_HandleTypeDef *lcd); // Limpa o display e reto
 void LCD_CMD_ReturnHome(I2C_LCD_HandleTypeDef *lcd); // Retorna o cursor para 0,0
 void LCD_CMD_EntryModeSet(I2C_LCD_HandleTypeDef *lcd, LCD_EntryMode entryMode); // Define o modo de entrada do LCD
 void LCD_CMD_DisplayControl(I2C_LCD_HandleTypeDef *lcd, LCD_DisplayControlOptions displayMode); // Configura o display a exibição do cursor e o efeito de piscar
-void LCD_CMD_CursorOrDisplayShift(I2C_LCD_HandleTypeDef *lcd, uint8_t cursorOrDisplayShift); // Move o cursor ou desloca o display.
+void LCD_CMD_CursorOrDisplayShift(I2C_LCD_HandleTypeDef *lcd, LCD_CursorOrDisplayShift cursorOrDisplayShift); // Move o cursor ou desloca o display.
 void LCD_CMD_FunctionSet(I2C_LCD_HandleTypeDef *lcd, LCD_FunctionSetOptions functionSet); // Define o tamanho da interface, numero de linhas do display e a fonte dos caracteres
 void LCD_PutCursor(I2C_LCD_HandleTypeDef *lcd, int row, int col); // Coloca o cursor na posição row, col
 void LCD_Backlight(I2C_LCD_HandleTypeDef *lcd, LCD_BacklightOnOff backlight); // Liga ou desliga a luz de fundo do display
